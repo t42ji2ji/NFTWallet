@@ -49,14 +49,14 @@ class LoginPageNotifier extends StateNotifier<LoginPageState> {
           .getEthereumCredentials()
           .getEthereumAddress()
           .toString();
-      print(address);
       var amount =
           await web3client.getBalance(EthereumAddress.fromHex(address));
-      print(amount.getValueInUnit(EtherUnit.ether));
       WalletsHelper().addWallet(
         new EthWallet(
           address,
-          ImportMethod.metamask,
+          importMethod: ImportMethod.metamask,
+          web3client: web3client,
+          ch2Contract: contract,
           ethers: amount.getValueInUnit(EtherUnit.ether),
         ),
       );

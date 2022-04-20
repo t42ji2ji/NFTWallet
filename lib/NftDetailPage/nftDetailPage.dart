@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:wallet_demo/LoginPage/LoginButton.dart';
 import 'package:wallet_demo/utils/theme.dart';
 import 'package:simple_animations/simple_animations.dart';
-import 'package:supercharged_dart/supercharged_dart.dart';
 
 class NftDetailPage extends StatefulWidget {
-  const NftDetailPage({Key? key}) : super(key: key);
+  const NftDetailPage({Key? key, required this.imgUrl}) : super(key: key);
+  final String imgUrl;
 
   @override
   State<NftDetailPage> createState() => _NftDetailPageState();
@@ -28,8 +28,8 @@ class _NftDetailPageState extends State<NftDetailPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Image.asset(
-                  'assets/chicken/ck-${index + 1}.png',
+                Image.network(
+                  widget.imgUrl,
                   height: 40,
                 ),
                 SizedBox(width: 5),
@@ -91,8 +91,8 @@ class _NftDetailPageState extends State<NftDetailPage> {
                       ),
                       height: 240,
                       width: double.infinity,
-                      child: Image.asset(
-                        'assets/chicken/ck-1.png',
+                      child: Image.network(
+                        widget.imgUrl,
                       ),
                     ),
                     Expanded(

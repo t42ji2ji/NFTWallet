@@ -11,9 +11,9 @@ class WalletInfo {
 
 class NFTCollection {
   final List<NFTInfo> nftInfos;
-  final String name;
-  final String tokenName;
-  final int tokenCount;
+  String name;
+  String tokenName;
+  int tokenCount;
 
   NFTCollection({
     required this.nftInfos,

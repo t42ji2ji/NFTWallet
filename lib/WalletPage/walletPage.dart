@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_swiper_null_safety/flutter_swiper_null_safety.dart';
 import 'package:matrix4_transform/matrix4_transform.dart';
 import 'package:wallet_demo/LoginPage/LoginButton.dart';
@@ -8,6 +9,15 @@ import 'package:wallet_demo/utils/theme.dart';
 import 'package:wallet_demo/utils/web3Helper.dart';
 
 import 'nftTab.dart';
+
+final walletIndexProvider = StateNotifierProvider<WalletIndex, int>((ref) {
+  return WalletIndex();
+});
+
+class WalletIndex extends StateNotifier<int> {
+  WalletIndex() : super(0);
+  void updateIndex(index) => state = index;
+}
 
 class WalletPage extends StatefulWidget {
   const WalletPage({Key? key}) : super(key: key);
@@ -19,6 +29,9 @@ class WalletPage extends StatefulWidget {
 class _WalletPageState extends State<WalletPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late SwiperController _swiperController = SwiperController();
+
+  int walletIndex = 0;
 
   List<String> walletBgs = [
     'assets/WalletPage/wallet-bg-01.png',
@@ -26,13 +39,28 @@ class _WalletPageState extends State<WalletPage>
     'assets/WalletPage/wallet-bg-03.png',
   ];
 
+  String walletType(ImportMethod type) {
+    switch (type) {
+      case ImportMethod.local:
+        return 'assets/Login/chicken-btn.png';
+      case ImportMethod.metamask:
+        return 'assets/Login/metamask-icon.png';
+      case ImportMethod.privateKey:
+        return 'assets/Login/key-btn.png';
+      default:
+        return '';
+    }
+  }
+
   @override
   void initState() {
     _tabController = TabController(vsync: this, length: 2);
+    // _swiperController = SwiperController();
     _tabController.addListener(() {
       setState(() {});
       print(_tabController.index);
     });
+
     super.initState();
   }
 
@@ -44,161 +72,186 @@ class _WalletPageState extends State<WalletPage>
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: CustomTheme.bgColor,
-      child: SafeArea(
-        bottom: false,
-        child: Container(
-          margin: EdgeInsets.only(top: 30),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Wallet',
-                          style: CustomTheme.textBoldWhite,
-                        ),
-                        SizedBox(width: 5),
-                        Icon(
-                          Icons.add_circle_outlined,
-                          color: CustomTheme.primaryColor,
-                        )
-                      ],
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Text(
-                        'logOut',
-                        style: CustomTheme.textPrimary,
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(height: 15),
-              Container(
-                height: 210,
-                child: Swiper(
-                  controller: SwiperController(),
-                  itemBuilder: (BuildContext context, int index) {
-                    return Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(walletBgs[index % 3]),
-                          fit: BoxFit.cover,
-                        ),
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Material(
+        color: CustomTheme.bgColor,
+        child: SafeArea(
+          bottom: false,
+          child: Container(
+            margin: EdgeInsets.only(top: 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
                         children: [
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              '${WalletsHelper().wallets[index].address.substring(0, 5)}...${WalletsHelper().wallets[index].address.substring(WalletsHelper().wallets[index].address.length - 3)}',
-                              style: CustomTheme.textBlack,
-                            ),
+                          Text(
+                            'Wallet',
+                            style: CustomTheme.textBoldWhite,
                           ),
-                          Spacer(),
-                          Row(
-                            children: [
-                              Image.asset('assets/WalletPage/eth-token.png',
-                                  width: 20),
-                              SizedBox(width: 10),
-                              Text(
-                                "${WalletsHelper().wallets[index].ethers.toStringAsFixed(5)} eth",
-                                style: CustomTheme.textBlack,
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          LoginButton(
-                            onPress: () {},
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6),
-                              child: Text(
-                                '轉帳',
-                                style: CustomTheme.textBlack,
-                              ),
-                            ),
+                          SizedBox(width: 5),
+                          Icon(
+                            Icons.add_circle_outlined,
+                            color: CustomTheme.primaryColor,
                           )
                         ],
                       ),
-                    );
-                  },
-                  itemCount: WalletsHelper().wallets.length,
-                  viewportFraction: 0.8,
-                  scale: 0.9,
-                ),
-              ),
-              SizedBox(height: 30),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: CustomTheme.bgSecondColor,
-                      borderRadius: BorderRadius.circular(10)),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10, bottom: 2),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                _tabController.animateTo(0);
-                              },
-                              child: Text(
-                                'Token',
-                                style: CustomTheme.textWhite,
-                              ),
-                            ),
-                            SizedBox(width: 30),
-                            GestureDetector(
-                              onTap: () {
-                                _tabController.animateTo(1);
-                              },
-                              child: Text(
-                                'NFT',
-                                style: CustomTheme.textWhite,
-                              ),
-                            ),
-                          ],
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Text(
+                          'logOut',
+                          style: CustomTheme.textPrimary,
                         ),
-                      ),
-                      AnimatedContainer(
-                        duration: Duration(milliseconds: 100),
-                        transform: Matrix4Transform()
-                            .translate(x: _tabController.index == 0 ? -30 : 38)
-                            .matrix4,
-                        width: 46,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: CustomTheme.primaryColor,
-                        ),
-                      ),
-                      Expanded(
-                        child: TabBarView(
-                          controller: _tabController,
-                          children: [
-                            TokenTab(),
-                            NFTTab(),
-                          ],
-                        ),
-                      ),
+                      )
                     ],
                   ),
                 ),
-              )
-            ],
+                SizedBox(height: 15),
+                Container(
+                  height: 210,
+                  child: Consumer(builder: (context, ref, _) {
+                    return Swiper(
+                      onIndexChanged: (i) {
+                        walletIndex = i;
+                        var w = ref.read(walletIndexProvider.notifier);
+                        w.updateIndex(walletIndex);
+                        setState(() {});
+                      },
+                      controller: _swiperController,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage(walletBgs[index % 3]),
+                              fit: BoxFit.cover,
+                            ),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Image.asset(
+                                      walletType(WalletsHelper()
+                                          .wallets[index]
+                                          .importMethod),
+                                      height: 24,
+                                    ),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      '${WalletsHelper().wallets[index].address.substring(0, 5)}...${WalletsHelper().wallets[index].address.substring(WalletsHelper().wallets[index].address.length - 3)}',
+                                      style: CustomTheme.textBlack,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Spacer(),
+                              Row(
+                                children: [
+                                  Image.asset('assets/WalletPage/eth-token.png',
+                                      width: 20),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    "${WalletsHelper().wallets[index].ethers.toStringAsFixed(5)} eth",
+                                    style: CustomTheme.textBlack,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10),
+                              LoginButton(
+                                onPress: () {},
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 6),
+                                  child: Text(
+                                    '轉帳',
+                                    style: CustomTheme.textBlack,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                      itemCount: WalletsHelper().wallets.length,
+                      viewportFraction: 0.8,
+                      scale: 0.9,
+                    );
+                  }),
+                ),
+                SizedBox(height: 30),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: CustomTheme.bgSecondColor,
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10, bottom: 2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  _tabController.animateTo(0);
+                                },
+                                child: Text(
+                                  'Token',
+                                  style: CustomTheme.textWhite,
+                                ),
+                              ),
+                              SizedBox(width: 30),
+                              GestureDetector(
+                                onTap: () {
+                                  _tabController.animateTo(1);
+                                },
+                                child: Text(
+                                  'NFT',
+                                  style: CustomTheme.textWhite,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        AnimatedContainer(
+                          duration: Duration(milliseconds: 100),
+                          transform: Matrix4Transform()
+                              .translate(
+                                  x: _tabController.index == 0 ? -30 : 38)
+                              .matrix4,
+                          width: 46,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: CustomTheme.primaryColor,
+                          ),
+                        ),
+                        Expanded(
+                          child: TabBarView(
+                            controller: _tabController,
+                            children: [
+                              TokenTab(),
+                              NFTTab(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),

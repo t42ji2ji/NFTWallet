@@ -41,7 +41,7 @@ class WalletConnectHelper {
         url: appInfo?.url ?? 'https://walletconnect.org',
         icons: appInfo?.icons ??
             [
-              'https://gblobscdn.gitbook.com/spaces%2F-LJJeCjcLrr53DcT1Ml7%2Favatar.png?alt=media'
+              'https://lh3.googleusercontent.com/qovME1uU15ol8NEaFdHxOdbKZ1lihJOkDod3nceW0Z-SKBxs1058sm8NePbs7L6rhRP1ZKUQyJ5G5RDZNob8oP8sMs-JT_-9JDtrNw=s0'
             ],
       ),
     );

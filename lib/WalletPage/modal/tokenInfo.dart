@@ -1,7 +1,7 @@
 class TokenInfo {
   final String imgPath;
-  final String name;
-  final double amount;
+  String name;
+  double amount;
 
   TokenInfo(this.imgPath, this.name, this.amount);
 }

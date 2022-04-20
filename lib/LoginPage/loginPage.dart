@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wallet_demo/LoginPage/loginPageState.dart';
-import 'package:web3dart/web3dart.dart';
-import 'package:http/http.dart';
 
-import '../WalletPage/walletPage.dart';
-import '../abi/stream_chicken_2.g.dart';
-import '../modals/AppInfo.dart';
 import '../utils/theme.dart';
-import '../utils/web3Helper.dart';
 import 'LoginButton.dart';
 import 'loginPageViewModal.dart';
 
@@ -34,6 +28,12 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, _) {
+      ref.listen<LoginPageState>(notifier, (p, n) {
+        // print(p is LoginPageState);
+        if (n is Data) {
+          ref.read(notifier.notifier).goToNextPage(context);
+        }
+      });
       return Scaffold(
         backgroundColor: CustomTheme.bgColor,
         body: Padding(
@@ -88,25 +88,24 @@ class _LoginPageState extends State<LoginPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          Image.asset(
+                            'assets/Login/metamask-icon.png',
+                            width: 26,
+                          ),
+                          SizedBox(width: 10),
                           ref.watch(notifier).when(
-                                (walletsHelper) => Text(walletsHelper
-                                    .wallets[0].address
-                                    .substring(0, 6)),
+                                (walletsHelper) => Text(
+                                    "${walletsHelper.wallets[0].address.substring(0, 5)}...${walletsHelper.wallets[0].address.substring(walletsHelper.wallets[0].address.length - 3)}"),
                                 loading: () => CircularProgressIndicator(),
-                                init: () => Image.asset(
-                                  'assets/Login/metamask-icon.png',
-                                  width: 26,
+                                init: () => Text(
+                                  'Connect Wallet',
+                                  style: CustomTheme.textBlack,
                                 ),
-                                error: (e) => Image.asset(
-                                  'assets/Login/metamask-icon.png',
-                                  width: 26,
+                                error: (e) => Text(
+                                  'Connect Error',
+                                  style: CustomTheme.textBlack,
                                 ),
                               ),
-                          SizedBox(width: 10),
-                          Text(
-                            'Connect Wallet',
-                            style: CustomTheme.textBlack,
-                          ),
                           SizedBox(width: 36),
                         ],
                       ),
